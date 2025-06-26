@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  name             String?
+  password         String
+  role             Role       @default(USER)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // Σχέσεις
+  ownedProjects    Project[]  @relation("ProjectOwner")
+  assignedProjects Project[]  @relation("ProjectAssignments")
+  tasks            Task[]     @relation("UserTasks")
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  projects  Project[]  @relation("ClientProjects")
+  createdAt DateTime   @default(now())
+}
+
+model Project {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      ProjectStatus @default(PENDING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Owner
+  owner       User?      @relation("ProjectOwner", fields: [ownerId], references: [id])
+  ownerId     String?
+
+  // Assigned users
+  assignedTo  User[]     @relation("ProjectAssignments")
+
+  // Client
+  client      Client?    @relation("ClientProjects", fields: [clientId], references: [id])
+  clientId    String?
+
+  // Tasks
+  tasks       Task[]     @relation("ProjectTasks")
+}
+
+model Task {
+  id           String      @id @default(cuid())
+  title        String
+  description  String?
+  priority     Priority     @default(NORMAL)
+  status       TaskStatus   @default(PENDING)
+  dueDate      DateTime?
+  createdAt    DateTime     @default(now())
+
+  // Project
+  project      Project      @relation("ProjectTasks", fields: [projectId], references: [id])
+  projectId    String
+
+  // Assigned User
+  assignedTo   User?        @relation("UserTasks", fields: [assignedToId], references: [id])
+  assignedToId String?
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum ProjectStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
