@@ -18,11 +18,10 @@ model User {
   email            String     @unique
   name             String?
   password         String
+  salt             String
   role             Role       @default(USER)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-
-  // Σχέσεις
   ownedProjects    Project[]  @relation("ProjectOwner")
   assignedProjects Project[]  @relation("ProjectAssignments")
   tasks            Task[]     @relation("UserTasks")
