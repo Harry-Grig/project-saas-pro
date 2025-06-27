@@ -7,12 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LucideLock, LucideMail } from "lucide-react";
 import { signInSchema } from "@/utils/validation";
-
+import { useEffect, useState } from "react";
+import { error } from "console";
+import { signIn } from "@/auth/action";
 
 export default function SignInForm() {
+ const [error, setError] = useState('')
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -22,10 +26,31 @@ export default function SignInForm() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    
-  };
+  useEffect(() => {
+    reset({
+      email: "",
+      password: "",
+    });
+  }, [reset]);
 
+  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+    try {
+      // Clear previous errors
+      setError("");
+      const error = await signIn(data);
+
+      
+      if (error) {
+        setError(error);
+      }
+      
+    } catch (err: any) {
+      
+      if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+              return;
+      }
+  };
+  }
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-2">
       <div className="space-y-1">
@@ -37,6 +62,7 @@ export default function SignInForm() {
           <Input
             type="email"
             placeholder="you@email.com"
+            autoComplete="off"
             className="pl-10 py-2 rounded-md border border-neutral-200 dark:border-neutral-700 focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all w-full max-w-md"
             {...register("email")}
           />
@@ -54,6 +80,7 @@ export default function SignInForm() {
           <Input
             type="password"
             placeholder="Password"
+            autoComplete="new-password"
             className="pl-10 py-2 rounded-md border border-neutral-200 dark:border-neutral-700 focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all w-full max-w-md"
             {...register("password")}
           />
