@@ -13,6 +13,6 @@ export async function passwordHasher(password: string, salt: string): Promise<st
 }
 
 
-export function generateSalt(): string {
+export function createSalt(): string {
     return crypto.randomBytes(512).toString('hex').normalize();
 }

@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LucideLock, LucideMail, LucideUser } from "lucide-react";
 import { signUpSchema } from "@/utils/validation";
+import { signUp } from "@/auth/action";
+import { useState } from "react";
 
 export default function SignUpForm() {
+  const [error, setError] = useState('');
   const {
     register,
     handleSubmit,
@@ -23,9 +26,29 @@ export default function SignUpForm() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
-    // handle sign up
-  };
+    
+
+async function onSubmit(data: z.infer<typeof signUpSchema>) {
+    try {
+        setError(''); 
+        const result = await signUp(data);
+
+        if (result && !result.success) {
+            setError(result.error);
+            return; 
+        }
+        
+        
+    } catch (err: any) {
+        console.error('SignUp error:', err);
+        if (err?.message?.includes("NEXT_REDIRECT")) {
+            return; 
+        }
+        setError("An unexpected error occurred");
+    }
+}
+
+
 
   return (
     <form
