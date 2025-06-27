@@ -6,6 +6,9 @@ import { signUpSchema } from "@/utils/validation";
 import { createSalt, passwordHasher } from "./passwordHasher";
 import { createUserSession } from "./session";
 import { redirect } from "next/navigation";
+import { signInSchema } from "@/utils/validation";
+import { comparePasswords } from "./passwordHasher";
+
 
 export async function signUp(
   unSafeData: z.infer<typeof signUpSchema>
@@ -52,4 +55,68 @@ export async function signUp(
   }
 
   redirect("/");
+}
+
+
+export async function signIn(unSafeData: z.infer<typeof signInSchema>) {
+  try {
+    const { data, success } = signInSchema.safeParse(unSafeData);
+
+    if(!success) {
+      return "Invalid input data"
+    }
+
+    const user = await db.user.findUnique({
+      where: {email: data.email},
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        role: true,
+        salt: true,
+      }
+    });
+
+     if (user === null) {
+      return "User not found";
+    }
+
+    const isCorrectPassword = await comparePasswords({
+      hashedPassword: user.password,
+      salt: user.salt,
+      password: data.password,
+    });
+
+    if (!isCorrectPassword) {
+      return "Incorrect password";
+    }
+
+        await createUserSession(
+      {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      await cookies()
+    );
+
+
+    if (user.role === 'ADMIN') {
+      redirect('/admin');
+    } else {
+      redirect("/");
+    }
+
+
+  } catch (error) {
+      console.error("Error during sign in:", error);
+ 
+    if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
+      throw error; // Re-throw redirect errors
+    }
+    return "Sign in failed";
+  }
+  
 }

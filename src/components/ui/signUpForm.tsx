@@ -11,7 +11,7 @@ import { signUp } from "@/auth/action";
 import { useState } from "react";
 
 export default function SignUpForm() {
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>();
   const {
     register,
     handleSubmit,
@@ -30,25 +30,18 @@ export default function SignUpForm() {
 
 async function onSubmit(data: z.infer<typeof signUpSchema>) {
     try {
-        setError(''); 
-        const result = await signUp(data);
+      setError(undefined); // Clear previous errors
+      const error = await signUp(data);
 
-        if (result && !result.success) {
-            setError(result.error);
-            return; 
-        }
-        
-        
+      if (error) {
+        setError(error);
+      }
     } catch (err: any) {
-        console.error('SignUp error:', err);
-        if (err?.message?.includes("NEXT_REDIRECT")) {
-            return; 
-        }
-        setError("An unexpected error occurred");
+      if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+        return;
+      }
     }
-}
-
-
+  }
 
   return (
     <form
