@@ -8,7 +8,7 @@ import { createUserSession } from "./session";
 import { redirect } from "next/navigation";
 import { signInSchema } from "@/utils/validation";
 import { comparePasswords } from "./passwordHasher";
-
+import { removeUserFromSession } from "./session";
 
 export async function signUp(
   unSafeData: z.infer<typeof signUpSchema>
@@ -54,7 +54,7 @@ export async function signUp(
     throw new Error("Failed to create user");
   }
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 
@@ -106,7 +106,7 @@ export async function signIn(unSafeData: z.infer<typeof signInSchema>) {
     if (user.role === 'ADMIN') {
       redirect('/admin');
     } else {
-      redirect("/");
+      redirect("/dashboard");
     }
 
 
@@ -119,4 +119,10 @@ export async function signIn(unSafeData: z.infer<typeof signInSchema>) {
     return "Sign in failed";
   }
   
+}
+
+
+export async function logOut() {
+  await removeUserFromSession(await cookies());
+  redirect("/");
 }

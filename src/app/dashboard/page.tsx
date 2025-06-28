@@ -1,15 +1,25 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { getCurrentUser } from "@/auth/currentUser";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    const user = await getCurrentUser({ withFullUser: true });
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Please log in to view your profile.</p>
+      </div>
+    );
+  }
   return (
     <>
       {/* Welcome Banner */}
       <div className="px-4 lg:px-6 py-4 lg:py-6">
         <Card className="rounded-xl shadow-md p-4 lg:p-6 flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-rose-100/80 to-indigo-100/80 dark:from-neutral-800 dark:to-neutral-900 mb-6">
           <div className="w-full md:w-auto">
-            <h2 className="text-xl lg:text-2xl font-bold mb-1">Welcome back, Χρήστη!</h2>
+            <h2 className="text-xl lg:text-2xl font-bold mb-1">Welcome back, {user.name}!</h2>
             <p className="text-sm lg:text-base text-neutral-600 dark:text-neutral-300">Here's your activity overview today</p>
           </div>
         </Card>

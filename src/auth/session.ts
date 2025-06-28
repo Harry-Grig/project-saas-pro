@@ -48,3 +48,35 @@ function SetCookie(sessionId: string, cookies: Pick<Cookies, "set">) {
     expires: Date.now() + SESSION_EXPIRATION_SECONDS * 1000,
   });
 }
+
+export async function getUserFromSession(cookies: Pick<Cookies, "get">) {
+  const sessionId = cookies.get(COOKIE_SESSION_KEY)?.value;
+  if (!sessionId) return null;
+  return await getUserSessionById(sessionId);
+}
+
+
+export async function getUserSessionById(sessionId: string) {
+  const sessionData = await redis.get(`session:${sessionId}`);
+  if (sessionData === null) return null;
+
+  try {
+    
+    const user = sessionSchema.parse(sessionData);
+    return user;
+  } catch (error) {
+    console.error("Session parsing error:", error);
+    return null;
+  }
+}
+
+
+export async function removeUserFromSession(
+  cookies: Pick<Cookies, "delete" | "get">
+) {
+  const sessionId = cookies.get(COOKIE_SESSION_KEY)?.value;
+  if (!sessionId) return;
+
+  await redis.del(`session:${sessionId}`);
+  cookies.delete(COOKIE_SESSION_KEY);
+}
