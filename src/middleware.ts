@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Αν δεν ταιριάζει τίποτα, άφησέ τον να προχωρήσει
+  
   return NextResponse.next();
 }
 
