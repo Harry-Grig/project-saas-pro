@@ -1,45 +1,70 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getUserFromSession } from "./auth/session";
-import { NextResponse } from "next/server";
 
-const privateRoutes = ["/dashboard", "/dashboard/projects", "/dashboard/clients", "/dashboard/tasks"];
-const adminRoutes = ["/admin", "/admin/tasks", "/admin/users", "/admin/users/[userId]" ,"/admin/profile" ,"/admin/settings"];
+const privateRoutes = [
+  "/dashboard",
+  "/dashboard/projects",
+  "/dashboard/clients",
+  "/dashboard/tasks",
+];
+
+const adminRoutes = [
+  "/admin",
+  "/admin/tasks",
+  "/admin/users",
+  "/admin/users/[userId]",
+  "/admin/profile",
+  "/admin/settings",
+];
+
+const publicRoutes = ["/", "/sign-in", "/sign-up"];
 
 export async function middleware(request: NextRequest) {
-  const res = await middlewareAuth(request) ?? NextResponse.next()
-  return res
-}
+  const pathname = request.nextUrl.pathname;
 
-async function middlewareAuth(request: NextRequest) {
   const user = await getUserFromSession(request.cookies);
-  
-  // Check if the user is ADMIN and tries to access private routes
-  if (privateRoutes.includes(request.nextUrl.pathname)) {
-    if (user === null) {
-      return Response.redirect(new URL("/sign-in", request.url));
+
+  // 👉 Αν user είναι logged in και πάει σε public route → redirect στο σωστό dashboard
+  if (publicRoutes.includes(pathname)) {
+    if (user) {
+      if (user.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
     }
-    
-    // If the user is ADMIN, redirect to /admin
+    // Αν δεν είναι logged in → τον αφήνεις να δει public route
+    return NextResponse.next();
+  }
+
+  // 👉 Private routes
+  if (privateRoutes.includes(pathname)) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
     if (user.role === "ADMIN") {
-      return Response.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
+    return NextResponse.next();
   }
-  
-  // Check for admin routes
-  if (adminRoutes.includes(request.nextUrl.pathname)) {
-    if (user === null) {
-      return Response.redirect(new URL("/sign-in", request.url));
+
+  // 👉 Admin routes
+  if (adminRoutes.includes(pathname)) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
-    
     if (user.role !== "ADMIN") {
-      return Response.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+    return NextResponse.next();
   }
+
+  // Αν δεν ταιριάζει τίποτα, άφησέ τον να προχωρήσει
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|.*\\..*).*)",
   ],
 };
