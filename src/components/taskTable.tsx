@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit } from "lucide-react";
+import { Eye } from "lucide-react";
 
 interface Task {
   title: string;
@@ -57,7 +57,7 @@ export default function TaskTable({ tasks }: TaskTableProps) {
             <th className="px-4 py-2 text-left">Status</th>
             <th className="px-4 py-2 text-left">Priority</th>
             <th className="px-4 py-2 text-left">Due Date</th>
-            <th className="px-4 py-2 text-left">Actions</th>
+            <th className="px-4 py-2 text-left">See Details</th>
           </tr>
         </thead>
         <tbody>
@@ -70,7 +70,7 @@ export default function TaskTable({ tasks }: TaskTableProps) {
               <td className="px-4 py-2">{task.due}</td>
               <td className="px-4 py-2 flex gap-2">
                 <Button size="icon" variant="ghost">
-                  <Edit className="w-4 h-4" />
+                  <Eye className="w-4 h-4" />
                 </Button>
                 {/* Add status dropdown/toggle here */}
               </td>
