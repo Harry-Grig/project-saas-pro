@@ -4,6 +4,7 @@ import { logOut } from "@/auth/action";
 import { Button } from "@/components/ui/button";
 import { Home, ListChecks, Settings, Users, Folder, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -15,10 +16,10 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen }: Dashbo
 
   const menuItems = [
     { name: "Dashboard", icon: Home, href: "/dashboard" },
-    { name: "My Projects", icon: Folder, href: "/projects" },
-    { name: "My Tasks", icon: ListChecks, href: "/tasks" },
-    { name: "Clients", icon: Users, href: "/clients" },
-    { name: "Settings", icon: Settings, href: "/settings" },
+    { name: "My Projects", icon: Folder, href: "/dashboard/projects" },
+    { name: "My Tasks", icon: ListChecks, href: "/dashboard/tasks" },
+    { name: "Clients", icon: Users, href: "/dashboard/clients" },
+    { name: "Settings", icon: Settings, href: "/dashboard/settings" },
   ];
 
   const handleItemClick = (itemName: string) => {
@@ -28,8 +29,6 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen }: Dashbo
       setSidebarOpen(false);
     }
   };
-
- 
 
   return (
     <>
@@ -48,16 +47,21 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen }: Dashbo
               return (
                 <Button
                   key={item.name}
+                  asChild
                   variant={isActive ? "default" : "ghost"}
                   className={`w-full justify-start text-left h-12 ${
                     isActive 
                       ? "bg-rose-600 text-white hover:bg-rose-700" 
                       : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   }`}
-                  onClick={() => handleItemClick(item.name)}
                 >
-                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{item.name}</span>
+                  <Link
+                    href={item.href}
+                    onClick={() => handleItemClick(item.name)}
+                  >
+                    <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
                 </Button>
               );
             })}
@@ -103,16 +107,21 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen }: Dashbo
               return (
                 <Button
                   key={item.name}
+                  asChild
                   variant={isActive ? "default" : "ghost"}
                   className={`w-full justify-start text-left h-11 ${
                     isActive 
                       ? "bg-rose-600 text-white hover:bg-rose-700" 
                       : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   }`}
-                  onClick={() => handleItemClick(item.name)}
                 >
-                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{item.name}</span>
+                  <Link
+                    href={item.href}
+                    onClick={() => handleItemClick(item.name)}
+                  >
+                    <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
                 </Button>
               );
             })}
