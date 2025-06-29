@@ -1,49 +1,48 @@
+// app/dashboard/tasks/page.tsx
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ListChecks, CheckCircle, Clock, AlertTriangle, XCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-
+import { getCurrentUser } from "@/auth/currentUser";
+import { getUserTasks } from "@/actions/tasks";
 import TaskFilters from "@/components/tasksFilters";
 import EmptyState from "@/components/emptyState";
 import TaskTable from "@/components/taskTable";
+import { TaskStatus } from "@/generated/prisma";
 
-export default function TasksPage() {
-  // Dummy data for illustration
+
+export default async function TasksPage() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return <div>Please log in to view your tasks.</div>;
+  }
+
+  const tasks = await getUserTasks();
+
+  // Calculate stats from real data
   const stats = [
-    { label: "Completed", value: 12, color: "green", icon: <CheckCircle className="text-green-600" /> },
-    { label: "In Progress", value: 5, color: "blue", icon: <Clock className="text-blue-600" /> },
-    { label: "Pending", value: 3, color: "yellow", icon: <AlertTriangle className="text-yellow-500" /> },
-    { label: "Overdue", value: 1, color: "red", icon: <XCircle className="text-red-600" /> },
-  ];
-
-  const tasks = [
-    {
-      title: "Design login page",
-      project: "Website Redesign",
-      status: "In Progress",
-      priority: "High",
-      due: "2025-07-01",
+    { 
+      label: "Completed", 
+      value: tasks.filter(t => t.status === TaskStatus.COMPLETED).length, 
+      color: "green", 
+      icon: <CheckCircle className="text-green-600" /> 
     },
-    {
-      title: "Client kickoff call",
-      project: "Acme Onboarding",
-      status: "Pending",
-      priority: "Normal",
-      due: "2025-07-03",
+    { 
+      label: "In Progress", 
+      value: tasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length, 
+      color: "blue", 
+      icon: <Clock className="text-blue-600" /> 
     },
-    {
-      title: "Write documentation",
-      project: "API Project",
-      status: "Completed",
-      priority: "Low",
-      due: "2025-06-25",
+    { 
+      label: "Pending", 
+      value: tasks.filter(t => t.status === TaskStatus.PENDING).length, 
+      color: "yellow", 
+      icon: <AlertTriangle className="text-yellow-500" /> 
     },
-    {
-      title: "Fix payment bug",
-      project: "E-commerce",
-      status: "Overdue",
-      priority: "High",
-      due: "2025-06-20",
+    { 
+      label: "Overdue", 
+      value: tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== TaskStatus.COMPLETED).length, 
+      color: "red", 
+      icon: <XCircle className="text-red-600" /> 
     },
   ];
 
@@ -61,7 +60,6 @@ export default function TasksPage() {
           <h1 className="text-3xl font-extrabold tracking-tight">Tasks</h1>
         </div>
         <p className="text-neutral-500 mb-2">View, filter and manage all your tasks</p>
-        {/* Breadcrumb (optional) */}
         <nav className="text-sm text-neutral-400 mb-4">
           Dashboard <span className="mx-1">/</span> Tasks
         </nav>
@@ -82,12 +80,12 @@ export default function TasksPage() {
         ))}
       </div>
 
-      {/* Filters & Actions - Client Component */}
+      {/* Filters & Actions */}
       <TaskFilters />
 
-      {/* Task Table - Client Component */}
+      {/* Task Table */}
       <Card className="rounded-lg shadow-sm overflow-x-auto">
-        <div className="p-4 font-semibold text-lg">My Tasks</div>
+        <div className="p-4 font-semibold text-lg">My Tasks ({tasks.length})</div>
         <Separator />
         <TaskTable tasks={tasks} />
       </Card>
