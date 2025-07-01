@@ -1,12 +1,13 @@
 // src/app/admin/users/page.tsx
 import AdminDashboardClient from "@/components/AdminDashboardClient";
+import { Employee } from "@/utils/types";
 
 // Mock data (could be fetched from an API in a real application)
-const getEmployees = async () => {
+const getEmployees = async (): Promise<Employee[]> => {
   // In a real app, this would be an API call, e.g.,
   // const res = await fetch('https://your-api.com/employees', { cache: 'no-store' }); // Disable caching if data is highly dynamic
   // const employees = await res.json();
-  const employees = [
+  const employees: Employee[] = [
     {
       id: 1,
       name: 'Γιάννης Παπαδόπουλος',
