@@ -9,11 +9,11 @@ export const PROJECT_STATUS = {
 
 export type ProjectStatus = typeof PROJECT_STATUS[keyof typeof PROJECT_STATUS];
 
-// Greek labels for Project Status
+// English labels for Project Status
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
-  [PROJECT_STATUS.PENDING]: "PENDING",
-  [PROJECT_STATUS.ACTIVE]: "ACTIVE",
-  [PROJECT_STATUS.COMPLETED]: "COMPLETED"
+  [PROJECT_STATUS.PENDING]: "Pending",
+  [PROJECT_STATUS.ACTIVE]: "Active",
+  [PROJECT_STATUS.COMPLETED]: "Completed"
 };
 
 // Options array for select components
@@ -31,11 +31,11 @@ export const TASK_STATUS = {
 
 export type TaskStatus = typeof TASK_STATUS[keyof typeof TASK_STATUS];
 
-// Greek labels for Task Status
+// English labels for Task Status
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  [TASK_STATUS.PENDING]: "PENDING",
-  [TASK_STATUS.IN_PROGRESS]: "IN_PROGRESS",
-  [TASK_STATUS.COMPLETED]: "COMPLETED"
+  [TASK_STATUS.PENDING]: "Pending",
+  [TASK_STATUS.IN_PROGRESS]: "In Progress",
+  [TASK_STATUS.COMPLETED]: "Completed"
 };
 
 // Priority Constants
@@ -47,11 +47,11 @@ export const PRIORITY = {
 
 export type Priority = typeof PRIORITY[keyof typeof PRIORITY];
 
-// Greek labels for Priority
+// English labels for Priority
 export const PRIORITY_LABELS: Record<Priority, string> = {
-  [PRIORITY.LOW]: "LOW",
-  [PRIORITY.NORMAL]: "NORMAL",
-  [PRIORITY.HIGH]: "HIGH"
+  [PRIORITY.LOW]: "Low",
+  [PRIORITY.NORMAL]: "Normal",
+  [PRIORITY.HIGH]: "High"
 };
 
 // Role Constants
@@ -62,8 +62,8 @@ export const ROLE = {
 
 export type Role = typeof ROLE[keyof typeof ROLE];
 
-// Greek labels for Roles
+// English labels for Roles
 export const ROLE_LABELS: Record<Role, string> = {
-  [ROLE.ADMIN]: "ADMIN",
-  [ROLE.USER]: "USER"
+  [ROLE.ADMIN]: "Administrator",
+  [ROLE.USER]: "User"
 };

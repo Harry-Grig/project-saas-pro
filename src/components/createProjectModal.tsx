@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form"; // Import SubmitHandler
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -31,7 +31,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { projectSchema, ProjectFormValues, ProjectStatusEnum } from "../utils/validation";
+import { createProjectSchema, CreateProjectFormValues } from "../utils/validation";
+import { PROJECT_STATUS_OPTIONS, PROJECT_STATUS } from '../utils/contsants';
 import { ClientSelect } from "../components/clientSelect";
 import { UserMultiSelect } from "./UserMultiSelect";
 import { OwnerSelect } from "./OwnerSelect";
@@ -39,30 +40,55 @@ import { OwnerSelect } from "./OwnerSelect";
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: ProjectFormValues) => void;
-  isLoading: boolean; // Για να δείχνει loading κατά την υποβολή
+  // The onSubmit prop's values type should match CreateProjectFormValues
+  onSubmit: (values: CreateProjectFormValues) => void;
+  isLoading: boolean; // To show loading during submission
 }
 
+// Define default values explicitly typed to CreateProjectFormValues
+// This helps ensure type consistency with the form schema and resolver.
+const defaultCreateProjectFormValues: CreateProjectFormValues = {
+  title: "",
+  description: "",
+  clientId: "",
+  assignedTo: [],
+  ownerId: "",
+  status: PROJECT_STATUS.PENDING,
+};
+
 export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: CreateProjectModalProps) {
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      clientId: undefined,
-      assignedTo: [],
-      ownerId: undefined,
-      status: "PENDING", // Default status
-    },
+  // Initialize useForm with the CreateProjectFormValues type and zodResolver
+  const form = useForm<CreateProjectFormValues>({
+    resolver: zodResolver(createProjectSchema),
+    defaultValues: defaultCreateProjectFormValues, // Use the explicitly typed default values
   });
 
-  const handleSubmit = (values: ProjectFormValues) => {
-    onSubmit(values);
+  // Handle form submission, explicitly typing the handler
+  const handleSubmit: SubmitHandler<CreateProjectFormValues> = (values) => {
+    const {
+      title,
+      description,
+      clientId,
+      assignedTo,
+      ownerId,
+      status,
+    } = values;
+
+    // Transform empty strings to undefined for optional fields before submitting
+    onSubmit({
+      title,
+      description: description === "" ? undefined : description,
+      clientId: clientId === "" ? undefined : clientId,
+      assignedTo,
+      ownerId: ownerId === "" ? undefined : ownerId,
+      status,
+    });
   };
 
+  // Reset form when modal closes
   React.useEffect(() => {
     if (!isOpen) {
-      form.reset(); // Επαναφορά της φόρμας όταν κλείνει το modal
+      form.reset(defaultCreateProjectFormValues); // Reset to the defined default values
     }
   }, [isOpen, form]);
 
@@ -70,9 +96,9 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Δημιουργία Νέου Project</DialogTitle>
+          <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
-            Συμπληρώστε τα στοιχεία για να δημιουργήσετε ένα νέο project.
+            Fill in the details to create a new project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -83,9 +109,9 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Τίτλος Project <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>Project Title <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Π.χ. Website redesign" {...field} />
+                    <Input placeholder="e.g. Website redesign" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,10 +124,10 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Περιγραφή</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Προσθέστε μια σύντομη περιγραφή του project..."
+                      placeholder="Add a brief description of the project..."
                       rows={4}
                       {...field}
                     />
@@ -117,7 +143,8 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               name="clientId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Πελάτης</FormLabel>
+                  <FormLabel>Client</FormLabel>
+                  {/* ClientSelect expects value and onChange */}
                   <ClientSelect value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -130,7 +157,8 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               name="assignedTo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ανατεθειμένοι Υπάλληλοι</FormLabel>
+                  <FormLabel>Assigned Employees</FormLabel>
+                  {/* UserMultiSelect expects value (array of strings) and onChange */}
                   <UserMultiSelect value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -144,6 +172,7 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Owner</FormLabel>
+                  {/* OwnerSelect expects value and onChange */}
                   <OwnerSelect value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -156,17 +185,18 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Κατάσταση</FormLabel>
+                  <FormLabel>Status</FormLabel>
+                  {/* Select component for status. onValueChange updates the form field. */}
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Επιλέξτε κατάσταση" />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {ProjectStatusEnum.options.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status}
+                      {PROJECT_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -178,10 +208,10 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit, isLoading }: Cre
 
             <DialogFooter className="mt-6 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-                Ακύρωση
+                Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Δημιουργία..." : "Δημιουργία Project"}
+                {isLoading ? "Creating..." : "Create Project"}
               </Button>
             </DialogFooter>
           </form>
