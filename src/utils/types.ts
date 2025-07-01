@@ -1,12 +1,11 @@
 export interface Employee {
-  id: number;
+  id: string; // should match Prisma's String
   name: string;
   email: string;
   role: 'ADMIN' | 'USER';
-  joined: string;
+  joined: string; // should be a string (e.g. ISO date)
   assignedProjects: number;
   avatar: string;
-  active: boolean;
 }
 
 export interface Stats {

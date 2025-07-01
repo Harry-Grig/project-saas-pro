@@ -1,32 +1,29 @@
-// src/app/admin/users/components/AdminDashboardClient.tsx
-'use client'; // This directive marks the component and its children as Client Components
+'use client';
 
 import React, { useState } from 'react';
-import { Users, UserCheck, Shield, CalendarPlus } from 'lucide-react';
+import { Users, Shield, CalendarPlus } from 'lucide-react';
 
 import DashboardHeader from './dashboardHeader';
 import StatCard from '../components/statCard';
 import EmployeeFilters from './serachAndFilters';
 import EmployeesTable from '../components/employsTable';
 import Pagination from '../components/pagination';
-import AddEmployeeModal from '../components/AddEmployeeModal';
 import EditEmployeeModal from '../components/EditEmployModal';
 import DeleteEmployeeModal from '../components/deleteEmployModal';
 
 // Define types for better type safety
 export type Employee = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: 'ADMIN' | 'USER';
   joined: string; // ISO date string (e.g., 'YYYY-MM-DD')
   assignedProjects: number;
   avatar: string; // Initials for the avatar
-  active: boolean;
 };
 
 type AdminDashboardClientProps = {
-  initialEmployees: Employee[];
+  initialUsers: Employee[];
   initialStats: {
     totalEmployees: number;
     activeEmployees: number;
@@ -36,10 +33,10 @@ type AdminDashboardClientProps = {
 };
 
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
-  initialEmployees,
+  initialUsers,
   initialStats,
 }) => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>(initialUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'USER'>('ALL');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
@@ -87,10 +84,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   const handleAddEmployee = (newEmployeeData: Omit<Employee, 'id' | 'joined' | 'avatar'>) => {
     const newEmployee: Employee = {
       ...newEmployeeData,
-      id: employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1, // Simple ID generation
+      id: crypto.randomUUID(), // Use a string ID
       joined: new Date().toISOString().split('T')[0], // Current date for "joined"
-      avatar: newEmployeeData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2), // Initials
-      active: true, // Default to active
+      avatar: newEmployeeData.name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2), // Initials
     };
     setEmployees((prev) => [...prev, newEmployee]);
     setShowAddModal(false);
@@ -104,7 +105,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     setSelectedEmployee(null); // Clear selected employee after edit
   };
 
-  const handleDeleteEmployee = (employeeId: number) => {
+  const handleDeleteEmployee = (employeeId: string) => {
     setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
     setShowDeleteModal(false);
     setSelectedEmployee(null); // Clear selected employee after delete
@@ -123,7 +124,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   // Re-calculate stats based on current employees state
   const currentStats = {
     totalEmployees: employees.length,
-    activeEmployees: employees.filter((emp) => emp.active).length,
+    activeEmployees: employees.length, // or your own logic for active
     admins: employees.filter((emp) => emp.role === 'ADMIN').length,
     newHires: employees.filter(
       (emp) => new Date(emp.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -140,12 +141,6 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           value={currentStats.totalEmployees}
           icon={Users}
           color="bg-indigo-500"
-        />
-        <StatCard
-          title="Active Employees"
-          value={currentStats.activeEmployees}
-          icon={UserCheck}
-          color="bg-green-500"
         />
         <StatCard
           title="Admins"
@@ -186,13 +181,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
         />
       )}
 
-      <AddEmployeeModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleAddEmployee}
-      />
-
-      {selectedEmployee && ( // Only render modals if an employee is selected
+      {selectedEmployee && (
         <>
           <EditEmployeeModal
             isOpen={showEditModal}
@@ -204,7 +193,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
             isOpen={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
             employee={selectedEmployee}
-            onConfirmDelete={handleDeleteEmployee}
+            onConfirmDelete={() => handleDeleteEmployee(selectedEmployee.id)}
           />
         </>
       )}
