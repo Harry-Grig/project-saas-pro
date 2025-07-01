@@ -2,13 +2,10 @@
 'use client';
 
 import React from 'react';
-import { Plus } from 'lucide-react';
 
-type DashboardHeaderProps = {
-  onAddEmployee: () => void;
-};
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onAddEmployee }) => {
+
+const DashboardHeader: React.FC = () => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
       <div>

@@ -10,6 +10,7 @@ import EmployeesTable from '../components/employsTable';
 import Pagination from '../components/pagination';
 import EditEmployeeModal from '../components/EditEmployModal';
 import DeleteEmployeeModal from '../components/deleteEmployModal';
+import { deleteEmploy } from '@/actions/employe';
 
 // Define types for better type safety
 export type Employee = {
@@ -42,7 +43,6 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
 
   // State for modal visibility and selected employee
-  const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -81,21 +81,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
 
   // Handlers for modal interactions and data manipulation
-  const handleAddEmployee = (newEmployeeData: Omit<Employee, 'id' | 'joined' | 'avatar'>) => {
-    const newEmployee: Employee = {
-      ...newEmployeeData,
-      id: crypto.randomUUID(), // Use a string ID
-      joined: new Date().toISOString().split('T')[0], // Current date for "joined"
-      avatar: newEmployeeData.name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2), // Initials
-    };
-    setEmployees((prev) => [...prev, newEmployee]);
-    setShowAddModal(false);
-  };
+
 
   const handleEditEmployee = (updatedEmployee: Employee) => {
     setEmployees((prev) =>
@@ -105,11 +91,12 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     setSelectedEmployee(null); // Clear selected employee after edit
   };
 
-  const handleDeleteEmployee = (employeeId: string) => {
-    setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
-    setShowDeleteModal(false);
-    setSelectedEmployee(null); // Clear selected employee after delete
-  };
+ const handleDeleteEmployee = async (id: string) => {
+  await deleteEmploy(id);
+  setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  setShowDeleteModal(false);
+  setSelectedEmployee(null);
+};
 
   const handleOpenEditModal = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -133,7 +120,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
   return (
     <>
-      <DashboardHeader onAddEmployee={() => setShowAddModal(true)} />
+      <DashboardHeader  />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard

@@ -1,3 +1,4 @@
+'use server';
 import { db } from "@/utils/prisma";
 
 type CreateUserInput = {
@@ -8,7 +9,7 @@ type CreateUserInput = {
   role?: "ADMIN" | "USER";
 };
 
-export default async function createEmployee(data: CreateUserInput) {
+export  async function createEmployee(data: CreateUserInput) {
   const employee = await db.user.create({
     data: {
       email: data.email,
@@ -19,4 +20,10 @@ export default async function createEmployee(data: CreateUserInput) {
     },
   });
   return employee;
+}
+
+export async function deleteEmploy(id: string) {
+  return await db.user.delete({
+    where: { id }
+  });
 }
